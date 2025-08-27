@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+      #container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 600px; }
+      h1 { color: #4a4a4a; }
+      input[type="text"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+      button { width: 100%; padding: 10px; background-color: #4285F4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+      button:disabled { background-color: #c0c0c0; }
+      #resposta { margin-top: 20px; padding: 15px; background-color: #e9f2ff; border-left: 5px solid #4285F4; min-height: 50px; white-space: pre-wrap; } /* white-space preserva as quebras de linha */
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>Agente Analítico de RH</h1>
+      <p>Faça uma pergunta sobre os dados do cálculo de VR/VA:</p>
+      
+      <input type="text" id="pergunta-usuario" placeholder="Ex: Qual o custo total para a empresa?">
+      
+      <button id="btn-enviar" onclick="enviarPergunta()">Perguntar ao Agente</button>
+      
+      <h3>Resposta:</h3>
+      <div id="resposta">Aguardando sua pergunta...</div>
+    </div>
+
+    <script>
+      function enviarPergunta() {
+        // Pega os elementos da página
+        const perguntaInput = document.getElementById('pergunta-usuario');
+        const respostaDiv = document.getElementById('resposta');
+        const botao = document.getElementById('btn-enviar');
+
+        // Pega o texto da pergunta
+        const pergunta = perguntaInput.value;
+        if (!pergunta) {
+          alert('Por favor, digite uma pergunta.');
+          return;
+        }
+
+        // Desabilita o botão e mostra uma mensagem de "carregando"
+        botao.disabled = true;
+        botao.innerText = "Pensando...";
+        respostaDiv.innerText = "Analisando os dados...";
+
+        // Esta é a MÁGICA: chama a função do nosso backend (.gs)
+        google.script.run
+          .withSuccessHandler(function(respostaDoAgente) {
+            // Isso executa se a chamada for um SUCESSO
+            respostaDiv.innerText = respostaDoAgente;
+            botao.disabled = false;
+            botao.innerText = "Perguntar ao Agente";
+          })
+          .withFailureHandler(function(erro) {
+            // Isso executa se a chamada FALHAR
+            respostaDiv.innerText = "Ocorreu um erro: " + erro.message;
+            botao.disabled = false;
+            botao.innerText = "Perguntar ao Agente";
+          })
+          .perguntarAoAgenteWebApp(pergunta); // Nome da função no .gs que vamos criar
+      }
+    </script>
+  </body>
+</html>
